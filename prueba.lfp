@@ -27,6 +27,5 @@ sumar("stock");
 max("precio_venta");
 min("precio_compra");
 exportarReporte("Reporte HTML");
-'''
-mamahuevo
-'''
+
+
