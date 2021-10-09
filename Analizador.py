@@ -67,7 +67,7 @@ class Analizador:
                     continue
 
                 elif actual == "'":
-                    self.estado = 6
+                    self.estado = 7
                     self.columna +=1
                     self.lexema += actual
                     
@@ -267,49 +267,44 @@ class Analizador:
             elif self.estado == 6:
                 
                 if actual == "'" :
-                    
-                    if habilitar_comentario:
-                        self.columna += 1
-                        self.lexema += actual
-                        self.estado = 6
-                        if actual == '\n':
-                            self.agregarToken(tipos.COMENTARIO_MULTILINEA)
-                            self.fila += 1
-                            habilitar_comentario = False
-                    else:
-                        self.columna += 1
-                        self.lexema += actual
-                        self.estado = 6
+                    temp += actual
+                    self.columna += 1
+                    self.lexema += actual
+                    self.estado = 6
+                    if temp == "'''":
+                        self.agregarToken(tipos.COMENTARIO_MULTILINEA)
+                        temp = ''
 
 
-
-                elif actual == '\n' and self.lexema == "'''":
+                elif actual == '\n' :
                     self.columna = 1
                     self.fila += 1
+                    self.columna = 1
                     self.lexema += actual
-                    habilitar_comentario = True
                     
                 
-                elif actual.isalpha() and habilitar_comentario:
+                elif actual.isalpha() :
                     self.columna += 1
                     self.lexema += actual
                     self.estado = 6
-                elif actual.isdigit() and habilitar_comentario:
-                    self.columna += 1
-                    self.lexema += actual
-                    self.estado = 6
-                
-                elif actual == ' ' and habilitar_comentario:
+                elif actual.isdigit() :
                     self.columna += 1
                     self.lexema += actual
                     self.estado = 6
                 
-                elif actual == '\n' and habilitar_comentario:
-                    self.columna = 1
-                    self.fila += 1
+                elif actual == ' ':
+                    self.columna += 1
                     self.lexema += actual
                     self.estado = 6
-                        
+
+
+            elif self.estado == 7:
+                if actual == "'":
+                    self.lexema += actual
+                    self.columna += 1
+                    self.estado = 7
+                    if self.lexema == "'''":
+                        self.estado = 6                 
 
                     
                 
@@ -392,3 +387,4 @@ class Analizador:
 
         for j in self.registros:
             print("Clave: ",j.getClave(), " Registro:",j.getRegistro())
+        
