@@ -18,7 +18,8 @@ class Token():
     PARENTESIS_I = 13
     PARENTESIS_D = 14
     CADENA = 15
-    DESCONOCIDO = 16
+    COMILLAS_DOBLE = 16
+    DESCONOCIDO = 17    
 
     #Método constructor
 
@@ -67,3 +68,7 @@ class Token():
             return 'PARENTESIS DERECHO'
         elif self.tipo == self.CADENA:
             return 'CADENA'
+        elif self.tipo == self.DESCONOCIDO:
+            return 'DESCONOCIDO'
+        elif self.tipo == self.COMILLAS_DOBLE:
+            return 'COMILLAS DOBLE'

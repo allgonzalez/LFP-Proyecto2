@@ -1,5 +1,6 @@
-#comentario una linea
+
+promedio("stock");
 '''
-Hola soy un comentario
-Multilinea
+hola soy
+un comentario Multilinea
 '''

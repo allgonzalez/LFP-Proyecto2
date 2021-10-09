@@ -1,10 +1,15 @@
 from Tokens import Token
+from Registros import Registros
 
 class Analizador:
     #Variable que guardará lo que vaya recorriendo poco a poco
     lexema = ''
     #Arreglo de tokens
     tokens = []
+    #Arrreglo de Claves
+    claves = []
+    #Arreglo de registros
+    registros = []
     #EStados para ir distribuyendo los distintos símbolos encontrados
     estado = 1
     #Fila en la que estoy
@@ -13,8 +18,9 @@ class Analizador:
     columna = 1
     #Ayuda a ver si generamos un reporte de errores por si hay símbolos que son desconocidos
     generarErrores = False
-
     
+
+ #----------------------------------------------Analizador lexico----------------------------------------------   
 
     def scanner(self, entrada):
         #Manejo de tipos
@@ -30,8 +36,8 @@ class Analizador:
         #Variables de apoyo temporales
         temp = ''
         habilitar_comentario = False
-        terminar_comentario = False
-        inicio_comentario = True
+        
+        habilitar_cadena = True
 
         entrada = entrada + '$'
         actual = ''
@@ -51,15 +57,20 @@ class Analizador:
                     self.estado = 3
                     self.columna += 1
                     self.lexema += actual
+                    
                 
                 elif actual == '"':
-                    self.estado = 4 
                     self.columna += 1
                     self.lexema += actual
+                    self.agregarToken(tipos.COMILLAS_DOBLE)
+                    self.estado = 4 
+                    continue
+
                 elif actual == "'":
                     self.estado = 6
                     self.columna +=1
                     self.lexema += actual
+                    
 
                 elif actual == '=':  
                     self.columna += 1
@@ -144,6 +155,7 @@ class Analizador:
                     continue
                 elif actual.isdigit():
                     self.agregarToken(tipos.DESCONOCIDO)
+                    self.generarErrores = True
                     
                 else:
                     if self.palabra_reservada(self.lexema):
@@ -165,7 +177,9 @@ class Analizador:
                         elif actual == '(':
                             self.lexema = actual
                             self.columna += 1
-                            self.agregarToken(tipos.PARENTESIS_I)    
+                            self.agregarToken(tipos.PARENTESIS_I)   
+                    else:
+                        self.agregarToken(tipos.DESCONOCIDO) 
 
             
             #Estado para los numeros
@@ -194,19 +208,36 @@ class Analizador:
                         self.columna +=1
                     
                     elif actual == '}':
-                        self.agregarToken(tipos.CORCHETE_D)
+                        self.agregarToken(tipos.LLAVE_D)
+                    elif actual == ' ':
+                        self.columna += 1
+                    elif actual == '\n':
+                        self.fila +=1
+                        self.columna = 0
 
             #Estado para las cadenas temporales
             elif self.estado == 4:
-                if actual != '"':
+                if actual.isalpha() and habilitar_cadena:
                     self.estado = 4
                     self.columna += 1
                     self.lexema += actual
-        
-                elif actual == '"':
-                    self.lexema += actual
+                elif actual =='_' and habilitar_cadena:
+                    self.estado = 4
                     self.columna += 1
-                    self.agregarToken(tipos.CADENA)  
+                    self.lexema += actual
+                
+                elif actual == ' ' and habilitar_cadena:
+                    self.estado = 4
+                    self.columna += 1
+                    self.lexema += actual
+
+                elif actual == '"':
+                    temporal = actual
+                    self.agregarToken(tipos.CADENA)
+                    self.lexema = temporal
+                    self.columna += 1
+                    self.agregarToken(tipos.COMILLAS_DOBLE)
+                      
 
             #Estado para los comentarios de una linea
             elif self.estado ==5:
@@ -235,16 +266,29 @@ class Analizador:
             #Estado para comentarios de multilinea
             elif self.estado == 6:
                 
-                if actual == "'" and inicio_comentario:
-                    self.columna += 1
-                    self.lexema += actual
-                    self.estado = 6
+                if actual == "'" :
+                    
+                    if habilitar_comentario:
+                        self.columna += 1
+                        self.lexema += actual
+                        self.estado = 6
+                        if actual == '\n':
+                            self.agregarToken(tipos.COMENTARIO_MULTILINEA)
+                            self.fila += 1
+                            habilitar_comentario = False
+                    else:
+                        self.columna += 1
+                        self.lexema += actual
+                        self.estado = 6
+
+
 
                 elif actual == '\n' and self.lexema == "'''":
                     self.columna = 1
                     self.fila += 1
+                    self.lexema += actual
                     habilitar_comentario = True
-                    inicio_comentario = False
+                    
                 
                 elif actual.isalpha() and habilitar_comentario:
                     self.columna += 1
@@ -265,19 +309,7 @@ class Analizador:
                     self.fila += 1
                     self.lexema += actual
                     self.estado = 6
-
-                
-                elif actual == "'" and habilitar_comentario:
-                    self.columna += 1
-                    self.lexema += actual
-                    temp += actual
-                    if temp == "'''":
-                        self.estado = 1
-                        self.lexema += actual
-                        self.agregarToken(tipos.COMENTARIO_MULTILINEA)
                         
-                        habilitar_comentario = False
-                        inicio_comentario = True
 
                     
                 
@@ -303,5 +335,60 @@ class Analizador:
         for i in self.tokens:
             if i.tipo != tipos.DESCONOCIDO:
                 print('Lexema: ',i.getLexema(), " | Fila: ", i.getFila(), ' | Columna: ', i.getColumna(), ' | Tipo: ',i.getTipo() )
+    
+    def imprimirErrores(self):
+        for j in self.tokens:
+            if j.tipo == tipos.DESCONOCIDO:
+                print('Lexema: ',j.getLexema(), " | Fila: ", j.getFila(), ' | Columna: ', j.getColumna(), ' | Tipo: ',j.getTipo() )
 
 
+
+
+#--------------------------------------------------------------Analizador sintáctico------------------------------------------------------
+
+    #Función para llenar las claves
+    def Claves(self):
+        Boolclave = False
+        for i in self.tokens:
+            
+            if i.getLexema().lower() == 'claves':
+                Boolclave = True
+            if i.tipo == tipos.CADENA and Boolclave:
+
+                self.claves.append(str(i.getLexema()))
+
+            elif i.tipo == tipos.CORCHETE_D and Boolclave:
+                Boolclave = False
+                break
+        
+        for j in self.claves:
+            print('clave: ', j)
+    
+    #Función para llenar registros
+    def Registros(self):
+        Boolregistro = False
+        llave_i = False
+        cont = 0
+
+        for i in self.tokens:
+            if i.getLexema().lower() == 'registros':
+                Boolregistro = True
+
+            elif i.tipo == tipos.LLAVE_I:
+                llave_i = True
+            
+            elif i.tipo == tipos.CADENA or i.tipo == tipos.NUMERO:
+                if Boolregistro:
+                    self.registros.append(Registros(self.claves[cont], i.getLexema()))
+                    cont +=1
+
+            elif i.tipo == tipos.LLAVE_D  and llave_i:
+                cont = 0
+                llave_i = False
+            
+            elif i.tipo == tipos.CORCHETE_D and Boolregistro:
+                Boolregistro = False
+                break
+
+        for j in self.registros:
+            print("Clave: ",j.getClave(), " Registro:",j.getRegistro())

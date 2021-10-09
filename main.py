@@ -3,6 +3,7 @@ from Analizador import Analizador
 
 
 
+
 def abrirArchivo():
     archivo = filedialog.askopenfilename(title="Abrir", filetypes=[("pixeles", "*.lfp")])
     archivos_texto = open(archivo, 'r')
@@ -13,6 +14,7 @@ print('--------------------Analizador Léxico------------------------')
 entrada = ''
 opcion = 0
 lexico = Analizador()
+
 
 while opcion != 4:
     print('1. Ingresar archivo')
@@ -31,6 +33,10 @@ while opcion != 4:
     
     elif opcion == 3:
         lexico.imprimirTokens()
-    
+        print("---Prueba--")
+        lexico.Claves()
+        print('')
+        lexico.Registros()
     elif opcion ==4:
          break
+    

@@ -7,7 +7,8 @@ Registros = [
     {3,"Mayonesa",15.00,18.00,8}
     {4,"Mostaza",14.00,16.00,4}
 ]
-#Comentario
+
+#Comentario de una linea
 '''
     Multilinea
     Hola mundo
@@ -17,6 +18,9 @@ imprimir("Reporte de ");
 imprimirln("Abarroteria ");
 conteo();
 promedio("stock");
+'''
+muchas lineas
+'''
 contarsi("stock",1);
 datos();
 sumar("stock");
