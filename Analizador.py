@@ -1,3 +1,5 @@
+from tkinter.font import families
+from Imprimir import imprimir
 from Tokens import Token
 from Registros import Registros
 from Error_Sintactico import ErrorSintactico
@@ -21,6 +23,8 @@ class Analizador:
     columna = 1
     #Ayuda a ver si generamos un reporte de errores por si hay símbolos que son desconocidos
     generarErrores = False
+
+    tildes = ['á','é','í','ó','ú']
     
 
  #----------------------------------------------Analizador lexico----------------------------------------------   
@@ -107,12 +111,12 @@ class Analizador:
                 elif actual == '(':
                     self.columna += 1
                     self.lexema += actual
-                    self.agregarToken(tipos.CORCHETE_I)
+                    self.agregarToken(tipos.PARENTESIS_D)
                 
                 elif actual == ')':
                     self.columna +=1
                     self.lexema += actual
-                    self.agregarToken(tipos.CORCHETE_D)
+                    self.agregarToken(tipos.PARENTESIS_D)
                 
                 elif actual == ';':
                     self.columna += 1
@@ -183,7 +187,8 @@ class Analizador:
                             self.columna += 1
                             self.agregarToken(tipos.PARENTESIS_I)   
                     else:
-                        self.agregarToken(tipos.DESCONOCIDO) 
+                        self.agregarToken(tipos.DESCONOCIDO)
+                        self.generarErrores = True
 
             
             #Estado para los numeros
@@ -225,10 +230,32 @@ class Analizador:
                     self.estado = 4
                     self.columna += 1
                     self.lexema += actual
+                if actual.isdigit() and habilitar_cadena:
+                    self.esatado = 4
+                    self.columna += 1
+                    self.lexema += actual
+
                 elif actual =='_' and habilitar_cadena:
                     self.estado = 4
                     self.columna += 1
                     self.lexema += actual
+                
+                
+                elif actual == '*' and habilitar_cadena:
+                    self.estado = 4
+                    self.columna += 1
+                    self.lexema += actual
+                
+                elif actual == '/' and habilitar_cadena:
+                    self.estado = 4
+                    self.columna += 1
+                    self.lexema += actual
+                
+                elif actual == "\\" and habilitar_cadena:
+                    self.estado = 4
+                    self.columna += 1
+                    self.lexema += actual
+
                 
                 elif actual == ' ' and habilitar_cadena:
                     self.estado = 4
@@ -388,6 +415,7 @@ class Analizador:
                     if self.tokens[cont-1].tipo != tipos.CORCHETE_D:
                         self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_D, self.tokens[cont-1].getFila(), self.tokens[cont-1].getColumna()))
                     Boolclave = False
+                    cont = contadorTemp-1
                 cont+=1
         
         else:
@@ -395,12 +423,11 @@ class Analizador:
 
 
 
-        if self.generarErrores:
-            for i in self.erroresSintacticos:
-                print("Error: ", i.getError(), " Fila: ", i.getFila(), " Columna: ", i.getColumna())
-        else:
+        if self.generarErrores == False:
             for j in self.claves:
                 print("claves: ", j)
+            
+            
             
 
     def Registros(self):
@@ -455,76 +482,63 @@ class Analizador:
                         contClave = 0
                     elif self.tokens[cont+1].tipo == tipos.CORCHETE_D:
                         Boolregistros = False
+                        cont = contadorTemp-1
                     else:
                         self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_D, self.tokens[cont].getFila()+1, 1))
                         self.generarErrores = True
                         Boolregistros = False
+                        cont = contadorTemp-1
+
 
                 cont += 1
         else:
             print("Hay errores de lexema o sintáctico")
 
 
-        if self.generarErrores:
-            for j in self.erroresSintacticos:
-                    print("Error: ", j.getError(), " Fila: ", j.getFila(), " Columna: ", j.getColumna())
-            
-        else:
+        if self.generarErrores == False:
             for i in self.registros:
                     print("Clave: ", i.getClave(), " Registro: ", i.getRegistro())
-
-
-
-
-
-    """
-    #Función para llenar las claves
-    def Claves(self):
-        Boolclave = False
-        for i in self.tokens:
             
-            if i.getLexema().lower() == 'claves':
-                Boolclave = True
-            if i.tipo == tipos.CADENA and Boolclave:
-
-                self.claves.append(str(i.getLexema()))
-
-            elif i.tipo == tipos.CORCHETE_D and Boolclave:
-                Boolclave = False
-                break
-        
-        for j in self.claves:
-            print('clave: ', j)
-    
 
 
-
-    #Función para llenar registros
-    def Registros(self):
-        Boolregistro = False
-        llave_i = False
+    def SintacticoImprimir(self):
+        tiposError = ErrorSintactico(0,0, 0)
+        contadorTemp = len(self.tokens)-1
         cont = 0
+        Boolimprimir = False
+        
 
-        for i in self.tokens:
-            if i.getLexema().lower() == 'registros':
-                Boolregistro = True
+        while cont != contadorTemp:
+            if self.tokens[cont].getLexema().lower() == 'imprimir' or self.tokens[cont].getLexema().lower() == 'imprimirln':
+                if self.tokens[cont+1].tipo != tipos.PARENTESIS_I:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.generarErrores = True
+                    
+                else:
+                    Boolimprimir = True
+                    
 
-            elif i.tipo == tipos.LLAVE_I:
-                llave_i = True
-            
-            elif i.tipo == tipos.CADENA or i.tipo == tipos.NUMERO:
-                if Boolregistro:
-                    self.registros.append(Registros(self.claves[cont], i.getLexema()))
-                    cont +=1
-
-            elif i.tipo == tipos.LLAVE_D  and llave_i:
-                cont = 0
-                llave_i = False
-            
-            elif i.tipo == tipos.CORCHETE_D and Boolregistro:
-                Boolregistro = False
+            elif self.tokens[cont].tipo == tipos.CADENA and Boolimprimir :
+                if self.tokens[cont+2].tipo != tipos.PARENTESIS_D:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.generarErrores = True
                 
+            
+            elif self.tokens[cont].tipo == tipos.PARENTESIS_D and Boolimprimir:
 
-        for j in self.registros:
-            print("Clave: ",j.getClave(), " Registro:",j.getRegistro())
-        """
+                if self.tokens[cont+1].tipo != tipos.PUNTO_COMA or self.tokens[cont+1] == None:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.generarErrores = True
+                    Boolimprimir = False
+                else: 
+                    Boolimprimir = False
+
+            cont+= 1
+
+
+    def imprimirErrores(self):
+        if self.generarErrores:
+            for i in self.erroresSintacticos:
+                print("Error: ", i.getError(), " Fila: ", i.getFila(), " Columna: ", i.getColumna())
+        else:
+            self.erroresSintacticos = []

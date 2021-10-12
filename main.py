@@ -37,6 +37,7 @@ while opcion != 4:
         lexico.Claves()
         print('')
         lexico.Registros()
+        lexico.SintacticoImprimir()
     elif opcion ==4:
          break
     

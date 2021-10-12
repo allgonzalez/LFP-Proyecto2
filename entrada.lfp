@@ -16,6 +16,7 @@ Registros = [
 	{12, "1/2 litro de agua pura", 14.00, 16.00, 4}
 ]
 
+
 #Comentario de una linea
 '''
     Multilinea
@@ -49,11 +50,6 @@ imprimir("Claves");
 imprimir(" ***** ***** *****\");
 imprimirln(" ")
 imprimirln(" ")
-
-Claves = [
-	"codigo", "producto", "precio_compra", 
-	"precio_venta", "stock"
-]
 
 imprimir("/***** ***** ***** ");
 imprimir("Registros");
@@ -95,7 +91,7 @@ min("precio_compra");
 
 # Exportar reporte
 imprimirln("/***** ***** ***** Exportando Reporte ***** ***** *****\");
-exportarReporte("Reporte HTML de abarrotería");
+exportarReporte("Reporte HTML de abarroteria");
 
 '''
 	Fin
