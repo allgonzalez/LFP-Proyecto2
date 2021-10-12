@@ -1,6 +1,4 @@
 class Token():
-    lexema_valido = ''
-    tipo = 0
 
     #Identificar por el número de tipo 
     NUMERO = 1

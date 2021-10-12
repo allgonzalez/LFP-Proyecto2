@@ -29,6 +29,8 @@ def obtenerTextoYGuardar():
     analizador.scanner(textoLeido)
     analizador.imprimirTokens()
     analizador.imprimirErrores()
+    analizador.Claves()
+    analizador.Registros()
 
 
 #Root
@@ -41,8 +43,6 @@ ventana.title("Editor de base de datos")
 #Ventana de edicion y lectura de texto
 textoEntrada = Text(ventana, height=40, width=70, bg="#313131", fg="white", font=("Consolas", 11)) 
 textoEntrada.place(x=10, y=100)
-
-
 
 textoSalida = Text(ventana, height=40, width=70, bg="#313131", fg="white", state="disable", font=("Consolas", 11))
 textoSalida.place(x=600, y=100)

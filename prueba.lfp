@@ -1,6 +1,7 @@
-Claves = [
+Claves  [  
     "codigo","producto","precio_compra","precio_venta","stock"
 ]
+
 Registros = [
     {1,"Barbacoa",10.50,20.00,6}
     {2,"Salsa",13.00,16.00,7}
@@ -27,5 +28,6 @@ sumar("stock");
 max("precio_venta");
 min("precio_compra");
 exportarReporte("Reporte HTML");
+datos();
 
 

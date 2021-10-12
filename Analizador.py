@@ -1,5 +1,6 @@
 from Tokens import Token
 from Registros import Registros
+from Error_Sintactico import ErrorSintactico
 
 class Analizador:
     #Variable que guardará lo que vaya recorriendo poco a poco
@@ -10,6 +11,8 @@ class Analizador:
     claves = []
     #Arreglo de registros
     registros = []
+    #Arreglos de errores sintácticos
+    erroresSintacticos = []
     #EStados para ir distribuyendo los distintos símbolos encontrados
     estado = 1
     #Fila en la que estoy
@@ -25,7 +28,8 @@ class Analizador:
     def scanner(self, entrada):
         #Manejo de tipos
         global tipos
-        tipos = Token("random", 0, 0,0) #Llenamos de datos random
+        tipos = Token("random", 0, 0,0) #Llenamos de datos random para importar las variables
+        
         self.estado = 1
         self.lexema = ''
         self.tokens = []
@@ -315,6 +319,8 @@ class Analizador:
         self.tokens.append(Token(self.lexema, tipo, self.fila, self.columna))
         self.lexema = ""
         self.estado = 1
+
+
     
     #Funcion para verificar si tenemos palabras reservadas
     def palabra_reservada(self, entrada = ''):
@@ -341,6 +347,137 @@ class Analizador:
 
 #--------------------------------------------------------------Analizador sintáctico------------------------------------------------------
 
+    def Claves(self):
+        tiposError = ErrorSintactico(0,0, 0)
+        contadorTemp = len(self.tokens)-1
+        cont = 0
+        Boolclave = False
+
+        if self.generarErrores == False:
+            while cont != contadorTemp:
+                if self.tokens[cont].getLexema().lower() == "claves":
+                    if self.tokens[cont+1].tipo == tipos.CORCHETE_I:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_IGUAL, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                        self.generarErrores = True
+                
+                    elif self.tokens[cont+1].tipo == tipos.IGUAL and self.tokens[cont+2].tipo != tipos.CORCHETE_I:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+2))
+                        self.generarErrores = True
+
+                    elif self.tokens[cont+1].tipo != tipos.IGUAL and self.tokens[cont+2].tipo != tipos.CORCHETE_I:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_IGUAL, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+1))
+                        self.generarErrores = True
+
+                    else:
+                     Boolclave = True
+
+                elif self.tokens[cont].tipo == tipos.CADENA and Boolclave:
+
+                    if self.tokens[cont-2].tipo == tipos.COMA:  
+                        self.claves.append(self.tokens[cont].getLexema())
+                
+                    elif self.tokens[cont-2].tipo == tipos.CORCHETE_I:
+                        self.claves.append(self.tokens[cont].getLexema())
+                
+                    else :
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_COMA, self.tokens[cont-2].getFila(), self.tokens[cont-2].getColumna()))
+                        self.generarErrores= True
+            
+                elif self.tokens[cont].getLexema().lower() == 'registros':
+                    if self.tokens[cont-1].tipo != tipos.CORCHETE_D:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_D, self.tokens[cont-1].getFila(), self.tokens[cont-1].getColumna()))
+                    Boolclave = False
+                cont+=1
+        
+        else:
+            print("Hay errores de lexema o sintáctico")
+
+
+
+        if self.generarErrores:
+            for i in self.erroresSintacticos:
+                print("Error: ", i.getError(), " Fila: ", i.getFila(), " Columna: ", i.getColumna())
+        else:
+            for j in self.claves:
+                print("claves: ", j)
+            
+
+    def Registros(self):
+        Boolregistros = False
+        cont = 0
+        contClave = 0
+        contadorTemp = len(self.tokens)-1
+        tiposError = ErrorSintactico(0,0, 0)
+
+        if self.generarErrores== False:
+            while cont != contadorTemp:
+            
+                if self.tokens[cont].getLexema().lower() == 'registros':
+                    if self.tokens[cont+1].tipo == tipos.CORCHETE_I:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_IGUAL, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                        self.generarErrores = True
+                
+                    elif self.tokens[cont+1].tipo == tipos.IGUAL and self.tokens[cont+2].tipo != tipos.CORCHETE_I:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+2))
+                        self.generarErrores = True
+
+                    elif self.tokens[cont+1].tipo != tipos.IGUAL and self.tokens[cont+2].tipo != tipos.CORCHETE_I:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_IGUAL, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+1))
+                        self.generarErrores = True
+
+                    else:
+                        Boolregistros = True
+            
+                elif self.tokens[cont].tipo == tipos.NUMERO or self.tokens[cont].tipo == tipos.CADENA:
+                    if Boolregistros:
+                        if self.tokens[cont-1].tipo == tipos.LLAVE_I or self.tokens[cont-2].tipo == tipos.COMA or self.tokens[cont-1].tipo == tipos.COMA:
+                            self.registros.append(Registros(self.claves[contClave], self.tokens[cont].getLexema()))
+                            contClave += 1
+                    
+                        elif self.tokens[cont].tipo == tipos.NUMERO:
+                            if self.tokens[cont-1].tipo != tipos.CORCHETE_D:
+                                self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_LLAVE_I, self.tokens[cont-1].getFila()+1, 1))
+                                self.generarErrores = True
+                        
+                            elif self.tokens[cont-1].tipo != tipos.COMA:
+                                self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_COMA, self.tokens[cont-1].getFila(), self.tokens[cont-1].getColumna()))
+                                self.generarErrores = True
+
+                        elif self.tokens[cont].tipo == tipos.CADENA:
+                            if self.tokens[cont-2].tipo != tipos.COMA:
+                                self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_COMA, self.tokens[cont-2].getFila(), self.tokens[cont-2].getColumna()))
+                                self.generarErrores = True
+                    
+                elif self.tokens[cont].tipo == tipos.LLAVE_D and Boolregistros:
+                    if self.tokens[cont+1].tipo == tipos.LLAVE_I: 
+                        contClave = 0
+                    elif self.tokens[cont+1].tipo == tipos.CORCHETE_D:
+                        Boolregistros = False
+                    else:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_D, self.tokens[cont].getFila()+1, 1))
+                        self.generarErrores = True
+                        Boolregistros = False
+
+                cont += 1
+        else:
+            print("Hay errores de lexema o sintáctico")
+
+
+        if self.generarErrores:
+            for j in self.erroresSintacticos:
+                    print("Error: ", j.getError(), " Fila: ", j.getFila(), " Columna: ", j.getColumna())
+            
+        else:
+            for i in self.registros:
+                    print("Clave: ", i.getClave(), " Registro: ", i.getRegistro())
+
+
+
+
+
+    """
     #Función para llenar las claves
     def Claves(self):
         Boolclave = False
@@ -359,6 +496,9 @@ class Analizador:
         for j in self.claves:
             print('clave: ', j)
     
+
+
+
     #Función para llenar registros
     def Registros(self):
         Boolregistro = False
@@ -383,8 +523,8 @@ class Analizador:
             
             elif i.tipo == tipos.CORCHETE_D and Boolregistro:
                 Boolregistro = False
-                break
+                
 
         for j in self.registros:
             print("Clave: ",j.getClave(), " Registro:",j.getRegistro())
-        
+        """
