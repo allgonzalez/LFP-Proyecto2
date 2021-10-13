@@ -17,7 +17,8 @@ class Token():
     PARENTESIS_D = 14
     CADENA = 15
     COMILLAS_DOBLE = 16
-    DESCONOCIDO = 17    
+    FIN_DOCUMENTO = 17
+    DESCONOCIDO = 18   
 
     #Método constructor
 
@@ -70,3 +71,6 @@ class Token():
             return 'DESCONOCIDO'
         elif self.tipo == self.COMILLAS_DOBLE:
             return 'COMILLAS DOBLE'
+        elif self.tipo == self.FIN_DOCUMENTO:
+            return 'FIN DEL DOCUMENTO'
+

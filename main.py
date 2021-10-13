@@ -38,6 +38,7 @@ while opcion != 4:
         print('')
         lexico.Registros()
         lexico.SintacticoImprimir()
+        lexico.sintacticoConteo()
     elif opcion ==4:
          break
     

@@ -146,6 +146,9 @@ class Analizador:
                 
 
                 elif actual == '$' and i == longitud-1:
+                    self.lexema += actual
+                    self.columna += 1
+                    self.agregarToken(tipos.FIN_DOCUMENTO)
                     print('Análisis finalizado con éxito :) ')
                 
                 else:
@@ -185,7 +188,22 @@ class Analizador:
                         elif actual == '(':
                             self.lexema = actual
                             self.columna += 1
-                            self.agregarToken(tipos.PARENTESIS_I)   
+                            self.agregarToken(tipos.PARENTESIS_I)
+                        elif actual == ')':
+                            self.lexema = actual
+                            self.columna += 1
+                            self.agregarToken(tipos.PARENTESIS_D)
+                        
+                        elif actual == '$':
+                            self.lexema = actual 
+                            self.columna += 1
+                            self.agregarToken(tipos.FIN_DOCUMENTO)
+                        
+                        elif actual == '"':
+                            self.lexema = actual 
+                            self.columna += 1
+                            self.agregarToken(tipos.COMILLAS_DOBLE)
+
                     else:
                         self.agregarToken(tipos.DESCONOCIDO)
                         self.generarErrores = True
@@ -223,6 +241,10 @@ class Analizador:
                     elif actual == '\n':
                         self.fila +=1
                         self.columna = 0
+                    elif actual == '$':
+                        self.lexema = actual
+                        self.columna += 1
+                        self.agregarToken(tipos.FIN_DOCUMENTO)
 
             #Estado para las cadenas temporales
             elif self.estado == 4:
@@ -293,6 +315,9 @@ class Analizador:
                         self.agregarToken(tipos.COMENTARIO_UNA_LINEA)
                         self.columna = 1
                         self.fila += 1
+                    elif actual == '$':
+                        self.agregarToken(tipos.COMENTARIO_UNA_LINEA)
+                    
             
             #Estado para comentarios de multilinea
             elif self.estado == 6:
@@ -501,7 +526,7 @@ class Analizador:
             
 
 
-    def SintacticoImprimir(self):
+    def SintacticoImprimirReporte(self):
         tiposError = ErrorSintactico(0,0, 0)
         contadorTemp = len(self.tokens)-1
         cont = 0
@@ -509,7 +534,7 @@ class Analizador:
         
 
         while cont != contadorTemp:
-            if self.tokens[cont].getLexema().lower() == 'imprimir' or self.tokens[cont].getLexema().lower() == 'imprimirln':
+            if self.tokens[cont].getLexema().lower() == 'imprimir' or self.tokens[cont].getLexema().lower() == 'imprimirln'or self.tokens[cont].getLexema().lower() == 'exportarreporte' :
                 if self.tokens[cont+1].tipo != tipos.PARENTESIS_I:
                     self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
                     self.generarErrores = True
@@ -526,7 +551,7 @@ class Analizador:
             
             elif self.tokens[cont].tipo == tipos.PARENTESIS_D and Boolimprimir:
 
-                if self.tokens[cont+1].tipo != tipos.PUNTO_COMA or self.tokens[cont+1] == None:
+                if self.tokens[cont+1].tipo != tipos.PUNTO_COMA:
                     self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
                     self.generarErrores = True
                     Boolimprimir = False
@@ -534,6 +559,144 @@ class Analizador:
                     Boolimprimir = False
 
             cont+= 1
+
+
+    def sintacticoConteoDatos(self):
+        tiposError = ErrorSintactico(0,0, 0)
+        contadorTemp = len(self.tokens)-1
+        cont = 0
+        Boolconteo = False
+
+        while cont != contadorTemp :
+            if self.tokens[cont].getLexema().lower() == 'conteo' or self.tokens[cont].getLexema().lower() == 'datos':
+                if self.tokens[cont+1].tipo == tipos.PARENTESIS_D: 
+                    if  self.tokens[cont+2].tipo == tipos.PUNTO_COMA:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                        self.generarErrores = True
+
+                    
+                    else:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()))
+                        self.generarErrores = True
+    
+
+                elif self.tokens[cont+1].tipo == tipos.PARENTESIS_I:
+                    if self.tokens[cont+2].tipo == tipos.PUNTO_COMA:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()))
+                        self.generarErrores = True
+
+                    elif self.tokens[cont+2].tipo != tipos.PARENTESIS_D and self.tokens[cont+3].tipo != tipos.PUNTO_COMA:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()))
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()+1))
+                        self.generarErrores = True
+                    
+                    elif self.tokens[cont+2].tipo == tipos.PARENTESIS_D and self.tokens[cont+3].tipo != tipos.PUNTO_COMA:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont+2].getFila(), self.tokens[cont+1].getColumna()+1))
+                        self.generarErrores = True
+                    
+
+                elif self.tokens[cont+1].tipo == tipos.PUNTO_COMA:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+1))
+                    self.generarErrores = True
+                
+                #
+                elif self.tokens[cont+1].tipo != tipos.PARENTESIS_I and self.tokens[cont+1].tipo != tipos.PARENTESIS_D and self.tokens[cont+1].tipo != tipos.PUNTO_COMA:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+1))
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+2))
+                    self.generarErrores = True
+
+                elif self.tokens[cont+1].tipo == tipos.FIN_DOCUMENTO:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+1))
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+2))
+                    self.generarErrores = True
+
+            cont+= 1
+
+    def sintacticoPromMaxMinSum(self):
+        tiposError = ErrorSintactico(0,0, 0)
+        contadorTemp = len(self.tokens)-1
+        cont = 0
+        Boolimprimir = False
+        
+
+        while cont != contadorTemp:
+            if self.tokens[cont].getLexema().lower() == 'promedio' or self.tokens[cont].getLexema().lower() == 'sumar' or self.tokens[cont].getLexema().lower() == 'max' or self.tokens[cont].getLexema().lower() == 'min':
+                if self.tokens[cont+1].tipo != tipos.PARENTESIS_I:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.generarErrores = True
+                    
+                else:
+                    Boolimprimir = True
+                    
+
+            elif self.tokens[cont].tipo == tipos.CADENA and Boolimprimir :
+                if self.tokens[cont+2].tipo != tipos.PARENTESIS_D:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.generarErrores = True
+                
+            
+            elif self.tokens[cont].tipo == tipos.PARENTESIS_D and Boolimprimir:
+
+                if self.tokens[cont+1].tipo != tipos.PUNTO_COMA:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.generarErrores = True
+                    Boolimprimir = False
+                else: 
+                    Boolimprimir = False
+
+            cont+= 1
+
+    def sintacticoContarSi(self):
+        tiposError = ErrorSintactico(0,0, 0)
+        contadorTemp = len(self.tokens)-1
+        cont = 0
+        Boolconteo = False
+
+        while cont != contadorTemp :
+            if self.tokens[cont].getLexema().lower() == 'contarsi':
+
+                if self.tokens[cont+1].tipo == tipos.COMILLAS_DOBLE:
+                    self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_I, self.tokens[cont].getFila(), self.tokens[cont].getColumna()))
+                    self.generarErrores = True
+    
+
+                elif self.tokens[cont+1].tipo == tipos.PARENTESIS_I:
+
+                    if  self.tokens[cont+5].tipo == tipos.NUMERO:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_COMA, self.tokens[cont].getFila(), self.tokens[cont].getColumna()+4))
+                        self.generarErrores = True
+
+                    elif self.tokens[cont+6].tipo == tipos.PUNTO_COMA:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()))
+                        self.generarErrores = True
+
+                    elif self.tokens[cont+6].tipo != tipos.PARENTESIS_D and self.tokens[cont+7].tipo != tipos.PUNTO_COMA:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()))
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()+1))
+                        self.generarErrores = True
+                    
+                    elif self.tokens[cont+6].tipo == tipos.PARENTESIS_D and self.tokens[cont+7].tipo != tipos.PUNTO_COMA:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont+2].getFila(), self.tokens[cont+1].getColumna()+1))
+                        self.generarErrores = True
+
+                    elif self.tokens[cont+6].tipo == tipos.FIN_DOCUMENTO:
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont+6].getFila(), self.tokens[cont+6].getColumna()+1))
+                        self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont+6].getFila(), self.tokens[cont+6].getColumna()+2))
+                        self.generarErrores = True
+   
+
+                
+
+            cont+= 1
+
+
+
+
+ 
 
 
     def imprimirErrores(self):

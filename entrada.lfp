@@ -23,10 +23,12 @@ Registros = [
     Hola mundo
     56Hola mundo
 '''
+
 imprimir("Reporte de ");
 imprimirln("Abarroteria ");
 conteo();
 promedio("stock");
+
 '''
 muchas lineas
 '''
@@ -48,14 +50,14 @@ datos();
 imprimir("/***** ***** ***** ");
 imprimir("Claves");
 imprimir(" ***** ***** *****\");
-imprimirln(" ")
-imprimirln(" ")
+imprimirln(" ");
+imprimirln(" ");
 
 imprimir("/***** ***** ***** ");
 imprimir("Registros");
 imprimir(" ***** ***** *****\");
-imprimirln(" ")
-imprimirln(" ")
+imprimirln(" ");
+imprimirln(" ");
 
 
 

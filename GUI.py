@@ -34,7 +34,10 @@ def Compilar():
     analizador.imprimirErrores()
     analizador.Claves()
     analizador.Registros()
-    analizador.SintacticoImprimir()
+    analizador.SintacticoImprimirReporte()
+    analizador.sintacticoConteoDatos()
+    analizador.sintacticoPromMaxMinSum()
+    analizador.sintacticoContarSi()
 
     textoSalida.configure(state='normal')
     textoSalida.delete('1.0', END)
@@ -73,7 +76,7 @@ def Compilar():
 
     else:
         textoSalida.configure(state='normal')
-        textoSalida.insert(END, "ERROR DE SINTAXIS O LÉXICO :(")
+        textoSalida.insert(END, "ERROR DE SINTAXIS O LEXICO :(")
         textoSalida.configure(state='disabled')
         analizador.imprimirErrores()
     

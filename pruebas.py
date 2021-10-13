@@ -1,6 +1,6 @@
 
-hola = ["hola1", "Hola2"]
 
-del hola 
+prueba = ["23","24"]
 
-print(hola)
+
+print(len(prueba)==2)
