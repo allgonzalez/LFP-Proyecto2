@@ -1,6 +1,7 @@
 Claves = [
     "codigo","producto","precio_compra","precio_venta","stock"
-]
+]@
+
 Registros = [
 	{1, "Barbacoa", 10.50, 20.00, 6}
 	{2, "Salsa", 13.00, 16.00, 7}
@@ -73,7 +74,7 @@ promedio("stock");
 imprimirln("/***** ***** ***** Contar si ***** ***** *****\");
 contarsi("stock", 0);
 contarsi("stock", 1);
-contarsi("stock", 2);
+contarsi("stock", 4);
 
 # Datos
 imprimirln("/***** ***** ***** Datos ***** ***** *****\");

@@ -3,6 +3,8 @@ from Imprimir import imprimir
 from Tokens import Token
 from Registros import Registros
 from Error_Sintactico import ErrorSintactico
+import webbrowser
+
 
 class Analizador:
     #Variable que guardará lo que vaya recorriendo poco a poco
@@ -205,6 +207,8 @@ class Analizador:
                             self.agregarToken(tipos.COMILLAS_DOBLE)
 
                     else:
+                        self.lexema += actual
+                        self.columna += 1
                         self.agregarToken(tipos.DESCONOCIDO)
                         self.generarErrores = True
 
@@ -388,6 +392,9 @@ class Analizador:
         for i in self.tokens:
             if i.tipo != tipos.DESCONOCIDO:
                 print('Lexema: ',i.getLexema(), " | Fila: ", i.getFila(), ' | Columna: ', i.getColumna(), ' | Tipo: ',i.getTipo() )
+            
+            else:
+                 print('Lexema: ',i.getLexema(), " | Fila: ", i.getFila(), ' | Columna: ', i.getColumna(), ' | Tipo: ',i.getTipo() )
     
     def imprimirErrores(self):
         for j in self.tokens:
@@ -693,15 +700,248 @@ class Analizador:
 
             cont+= 1
 
+#------------------------------------------FUNCIONES------------------------------------------
+
+    def Promedio(self,clave):
+        suma = 0
+        total = 0
+        promedio = 0
+        for i in self.registros:
+            if i.getClave() == clave:
+                suma += int(i.getRegistro())
+                total += 1
+        
+        promedio = suma / total
+        
+        return str(promedio)
+    
+    def Sumar(self,clave):
+        suma = 0
+        for i in self.registros:
+            if i.getClave() == clave:
+                suma += int(i.getRegistro())
+        
+        return str(suma)
+        
+    
+    def Maximo(self,clave):
+        temp = []
+        for i in self.registros:
+            if i.getClave() == clave:
+                temp.append(i.getRegistro())
+        
+        maxNum = max(temp, key= float)
+
+        return str(maxNum)
+    
+    def Minimo(self,clave):
+        temp = []
+        for i in self.registros:
+            if i.getClave() == clave:
+                temp.append(i.getRegistro())
+        
+        minNum = min(temp, key= float)
+
+        return str(minNum)
+    
+    def ContarSi(self,clave,valor):
+        suma = 0
+        for i in self.registros:
+            if i.getClave() == clave and i.getRegistro() == valor:
+                suma +=1
+
+        return str(suma)
+
+
+#-------------------------------------REPORETES----------------------------------------
+    def exportarReporte(self, nombre):
+        docHTML = open(nombre+'.html', 'w')
+        docHTML.write('\n<!DOCTYPE html>')
+        docHTML.write('\n<html lang="es">')
+        docHTML.write('\n<meta charset="utf-8">')
+        docHTML.write('\n<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">')
+        docHTML.write('\n<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">')
+        docHTML.write('\n<title>Reporte de Tokens</title>')
+        docHTML.write('\n</head>')
+        docHTML.write('\n<body>')
+        docHTML.write('\n<div class="container">')
+        docHTML.write('\n <h4 class= "text-center"> '+nombre+' </h4>')
+        docHTML.write('\n<div>')
+        docHTML.write('\n<div class="container">')
+        docHTML.write('\n<table class="table" border="1">')    
+        docHTML.write('\n\t <thead class="thead-dark">')
+        docHTML.write('\n\t\t <tr>')
+        
+        for i in self.claves:
+            docHTML.write('\n\t\t\t<th scope = "col">'+i+'</th>')
+
+        docHTML.write('\n\t\t </tr>')
+        docHTML.write('\n\t </thead>')
+        docHTML.write('\n\t <tbody>')
+
+        cont = 0
+        
+        rango = int(len(self.registros) / len(self.claves))
+
+
+        for j in range(rango):
+            docHTML.write('\n\t\t </tr>')
+            for k in range(len(self.claves)):
+                docHTML.write('\n\t\t\t<td>'+str(self.registros[cont].getRegistro()))
+                docHTML.write('</td>')
+                cont+=1
+            docHTML.write('\n\t\t </tr>')
+            
+
+        docHTML.write('\n\t </tbody>')
+        docHTML.write('\n</table>')
+        docHTML.write('\n</div>')  
+        docHTML.write('\n</body')
+        docHTML.write('\n</html>')
+        
+        docHTML.close()
+
+
+    def reporteTokensValidos(self):
+        docHTML = open('reporteTokensValidos.html', 'w')
+        docHTML.write('\n<!DOCTYPE html>')
+        docHTML.write('\n<html lang="es">')
+        docHTML.write('\n<meta charset="utf-8">')
+        docHTML.write('\n<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">')
+        docHTML.write('\n<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">')
+        docHTML.write('\n<title>Reporte de Tokens</title>')
+        docHTML.write('\n</head>')
+        docHTML.write('\n<body>')
+        docHTML.write('\n<div class="container">')
+        docHTML.write('\n <h4 class= "text-center"> Lista de Tokens Validos </h4>')
+        docHTML.write('\n<div>')
+        docHTML.write('\n<div class="container">')
+        docHTML.write('\n<table class="table" border="1">')    
+        docHTML.write('\n\t <thead class="thead-dark">')
+        docHTML.write('\n\t\t <tr>')
+        docHTML.write('\n\t\t\t<th scope = "col">Token</th>')
+        docHTML.write('\n\t\t\t<th scope = "col">Lexema</th>')
+        docHTML.write('\n\t\t\t<th scope = "col">Fila</th>')
+        docHTML.write('\n\t\t\t<th scope = "col">Columna</th>')
+        docHTML.write('\n\t\t </tr>')
+        docHTML.write('\n\t </thead>')
+        docHTML.write('\n\t <tbody>')
+        
+        for i in self.tokens:
+            if i.tipo != tipos.DESCONOCIDO:
+                docHTML.write('\n\t\t <tr class="table-success">')
+                docHTML.write('\n\t\t\t<th scope = "row">'+str(i.getTipo()))
+                docHTML.write('</th>')
+                docHTML.write('\n\t\t\t<td>'+str(i.getLexema()))
+                docHTML.write('</td>')
+                docHTML.write('\n\t\t\t<td>'+ str(i.getFila()))
+                docHTML.write('</td>')
+                docHTML.write('\n\t\t\t<td>'+ str(i.getColumna()))
+                docHTML.write('</td>')
+                docHTML.write('\n\t\t </tr>')
+
+        docHTML.write('\n\t </tbody>')
+        docHTML.write('\n</table>')
+        docHTML.write('\n</div>')  
+        docHTML.write('\n</body')
+        docHTML.write('\n</html>')
+        
+        docHTML.close()
+
+        webbrowser.open_new_tab('reporteTokensValidos.html')
+    
+    def reportesErrores(self):
+            docHTML = open('reporteErrores.html', 'w')
+            docHTML.write('\n<!DOCTYPE html>')
+            docHTML.write('\n<html lang="es">')
+            docHTML.write('\n<meta charset="utf-8">')
+            docHTML.write('\n<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">')
+            docHTML.write('\n<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">')
+            docHTML.write('\n<title>Reporte de Tokens</title>')
+            docHTML.write('\n</head>')
+            docHTML.write('\n<body>')
+            docHTML.write('\n<div class="container">')
+            docHTML.write('\n <h4 class= "text-center"> Lista de Tokens con Errores </h4>')
+            docHTML.write('\n<div>')
+            docHTML.write('\n<div class="container">')
+            docHTML.write('\n<table class="table" border="1">')    
+            docHTML.write('\n\t <thead class="thead-dark">')
+            docHTML.write('\n\t\t <tr>')
+            docHTML.write('\n\t\t\t<th scope = "col">Token</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Lexema</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Fila</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Columna</th>')
+            docHTML.write('\n\t\t </tr>')
+            docHTML.write('\n\t </thead>')
+            docHTML.write('\n\t <tbody>')
+        
+            for i in self.tokens:
+                if i.tipo == tipos.DESCONOCIDO:
+                    docHTML.write('\n\t\t <tr class="table-danger">')
+                    docHTML.write('\n\t\t\t<th scope = "row">'+'DESCONOCIDO')
+                    docHTML.write('</th>')
+                    docHTML.write('\n\t\t\t<td>'+str(i.getLexema()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t\t<td>'+ str(i.getFila()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t\t<td>'+ str(i.getColumna()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t </tr>')
+
+            docHTML.write('\n\t </tbody>')
+            docHTML.write('\n</table>')
+            docHTML.write('\n</div>') 
+
+            docHTML.write('\n<div class="container">')
+            docHTML.write('\n <h4 class= "text-center"> Lista Errores Sintacticos</h4>')
+            docHTML.write('\n<div>')
+            docHTML.write('\n<div class="container">')
+            docHTML.write('\n<table class="table" border="1">')    
+            docHTML.write('\n\t <thead class="thead-dark">')
+            docHTML.write('\n\t\t <tr>')
+            docHTML.write('\n\t\t\t<th scope = "col">Error</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Fila</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Columna</th>')
+            docHTML.write('\n\t\t </tr>')
+            docHTML.write('\n\t </thead>')
+            docHTML.write('\n\t <tbody>')
+        
+            for j in self.erroresSintacticos:
+    
+                    docHTML.write('\n\t\t <tr class="table-danger">')
+                    docHTML.write('\n\t\t\t<td>'+str(j.getError()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t\t<td>'+ str(j.getFila()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t\t<td>'+ str(j.getColumna()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t </tr>')
+
+            docHTML.write('\n\t </tbody>')
+            docHTML.write('\n</table>')
+            docHTML.write('\n</div>')  
+
+
+            docHTML.write('\n</body')
+            docHTML.write('\n</html>')
+
+
+        
+            docHTML.close()
+
+            webbrowser.open_new_tab('reporteErrores.html')
+    
+
+    def imprimirErroresSintacticos(self):
+        for i in self.erroresSintacticos:
+            print("Error: ", i.getError(), " Fila: ", i.getFila(), " Columna: ", i.getColumna())
 
 
 
- 
+            
 
-
-    def imprimirErrores(self):
-        if self.generarErrores:
-            for i in self.erroresSintacticos:
-                print("Error: ", i.getError(), " Fila: ", i.getFila(), " Columna: ", i.getColumna())
-        else:
-            self.erroresSintacticos = []
+    def limpiarDatos(self):
+        self.claves.clear()
+        self.registros.clear()
+        
+    
