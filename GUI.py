@@ -8,6 +8,7 @@ from Analizador import Analizador
 analizador = Analizador()
 #Funciones
 
+
 def reporteTokens():
     analizador.reporteTokensValidos()
 
@@ -59,6 +60,7 @@ def Compilar():
     salidaN = ''
     clave = ''
     numero = 0
+
 
     if analizador.generarErrores == False:
         analizador.Claves()
@@ -279,7 +281,7 @@ btnReporeteTokensValidos.place(x=515, y=50)
 btnReporeteTokensInvalidos = Button(ventana, height=2, width=13, text="Errores",command=reporteErrores, background="#B03314", font=("Verdana",10), fg="white")
 btnReporeteTokensInvalidos.place(x=630, y=50)
 
-btnReporeteGrpahviz = Button(ventana, height=2, width=10, text="Graphviz" , background="#0D9597", font=("Verdana",10), fg="white")
+btnReporeteGrpahviz = Button(ventana, height=2, width=10, text="Graphviz" , command=analizador.generarArbol, background="#0D9597", font=("Verdana",10), fg="white")
 btnReporeteGrpahviz.place(x=750, y=50)
 
 #Labels

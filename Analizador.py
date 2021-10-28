@@ -1,9 +1,9 @@
 from tkinter.font import families
-from Imprimir import imprimir
 from Tokens import Token
 from Registros import Registros
 from Error_Sintactico import ErrorSintactico
 import webbrowser
+from os import system, startfile
 
 
 class Analizador:
@@ -237,7 +237,10 @@ class Analizador:
                         self.agregarToken(tipos.IGUAL)
                     elif actual == ' ':
                         self.columna +=1
-                    
+                    elif actual == ")":
+                        self.lexema = actual
+                        self.columna += 1
+                        self.agregarToken(tipos.PARENTESIS_D)
                     elif actual == '}':
                         self.agregarToken(tipos.LLAVE_D)
                     elif actual == ' ':
@@ -520,8 +523,7 @@ class Analizador:
                         self.generarErrores = True
                         Boolregistros = False
                         cont = contadorTemp-1
-
-
+                        
                 cont += 1
         else:
             print("Hay errores de lexema o sintáctico")
@@ -681,7 +683,7 @@ class Analizador:
                         self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()))
                         self.generarErrores = True
 
-                    elif self.tokens[cont+6].tipo != tipos.PARENTESIS_D and self.tokens[cont+7].tipo != tipos.PUNTO_COMA:
+                    elif self.tokens[cont+7].tipo != tipos.PARENTESIS_D and self.tokens[cont+8].tipo != tipos.PUNTO_COMA:
                         self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PARENTESIS_D, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()))
                         self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_PUNTO_COMA, self.tokens[cont+1].getFila(), self.tokens[cont+1].getColumna()+1))
                         self.generarErrores = True
@@ -945,3 +947,419 @@ class Analizador:
         self.registros.clear()
         
     
+    def generarArbol(self):
+
+        boolClaves = False
+        boolRegistros = False
+        boolImprimir = False
+        boolImprimirln = False
+        boolConteo = False
+        boolPromedio = False
+        boolContarsi = False
+        boolDatos = False
+        boolSumar = False
+        boolMax = False
+        boolMin = False
+        boolReporte = False
+
+        n = 0
+        
+        arbol = '''
+        digraph L{
+            
+            NodoInicio[label="INICIO"];
+            NodoInstruccion[label="INSTRUCCIONES"];
+            NodoClave[label="CLAVES"];
+            NodoRegistro[label="REGISTROS"];
+            
+            
+
+            NodoInicio -> NodoInstruccion;
+            NodoInicio -> NodoClave;
+            NodoInicio -> NodoRegistro;\n
+        '''
+        for i in self.tokens:
+            #Empezamos con las claves
+            if i.getLexema().lower() == 'claves':
+                arbol+='NodoClave1[label="tk_claves"];\n'
+                arbol+='NodoClave->NodoClave1;\n'
+                boolClaves = True
+                n += 1
+            elif i.tipo == tipos.CORCHETE_I and boolClaves:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoClave1->Nodo'+str(n)+';\n'
+                n+=1
+            
+            elif i.tipo == tipos.CADENA and boolClaves:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoClave1->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.COMA and boolClaves:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoClave1->Nodo'+str(n)+';\n'
+                n+=1
+
+            elif i.tipo == tipos.CORCHETE_D and boolClaves:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoClave1->Nodo'+str(n)+';\n'
+                n+=1
+                boolClaves = False
+
+
+            #Continuamos con los registros
+            elif i.getLexema().lower() == 'registros':
+                arbol+='NodoRegistro1[label="tk_registros"];\n'
+                arbol+='NodoRegistro->NodoRegistro1;\n'
+                boolRegistros = True
+                n += 1
+
+            elif i.tipo == tipos.CORCHETE_I and boolRegistros:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoRegistro1->Nodo'+str(n)+';\n'
+                n+=1
+
+            elif i.tipo == tipos.LLAVE_I and boolRegistros:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoRegistro1->Nodo'+str(n)+';\n'
+                n+=1
+
+            elif i.tipo == tipos.CADENA and boolRegistros:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoRegistro1->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            
+            elif i.tipo == tipos.NUMERO and boolRegistros:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_numero"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoRegistro1->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+
+            elif i.tipo == tipos.COMA and boolRegistros:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoRegistro1->Nodo'+str(n)+';\n'
+                n+=1
+            
+            elif i.tipo == tipos.LLAVE_D and boolRegistros:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoRegistro1->Nodo'+str(n)+';\n'
+                n+=1
+
+            elif i.tipo == tipos.CORCHETE_D and boolRegistros:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoRegistro1->Nodo'+str(n)+';\n'
+                n+=1
+                boolRegistros = False
+
+            #Instrucciones -> imprimir
+            elif i.getLexema().lower() == 'imprimir':
+                arbol+='NodoInstruccion1[label="tk_imprimir"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion1;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion1->'+'Nodo'+str(n)+';\n'
+                boolImprimir = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolImprimir:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion1->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolImprimir:
+                if i.getLexema().find('\\') >= 0:
+                    arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                    arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'\ "];\n'
+                    arbol += 'NodoInstruccion1->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                    n+=1
+                else:
+                    arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                    arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'\ "];\n'
+                    arbol += 'NodoInstruccion1->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                    n+=1
+
+
+                
+            elif i.tipo == tipos.PARENTESIS_D and boolImprimir:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion1->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolImprimir:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion1->Nodo'+str(n)+';\n'
+                n+=1
+                boolImprimir = False
+
+            
+            #Instrucciones -> imprimirln
+            elif i.getLexema().lower() == 'imprimirln':
+                arbol+='NodoInstruccion2[label="tk_imprimirln"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion2;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion2->'+'Nodo'+str(n)+';\n'
+                boolImprimirln = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolImprimirln:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion2->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolImprimirln:
+                if i.getLexema().find('\\') >= 0:
+                    arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                    arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'\ "];\n'
+                    arbol += 'NodoInstruccion2->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                    n+=1
+                else:
+                    arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                    arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'\ "];\n'
+                    arbol += 'NodoInstruccion2->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                    n+=1
+            elif i.tipo == tipos.PARENTESIS_D and boolImprimirln:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion2->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolImprimirln:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion2->Nodo'+str(n)+';\n'
+                n+=1
+                boolImprimirln = False
+
+
+            #Instrucciones -> conteo
+            elif i.getLexema().lower() == 'conteo':
+                arbol+='NodoInstruccion3[label="tk_conteo"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion3;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion3->'+'Nodo'+str(n)+';\n'
+                boolConteo = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolConteo:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion3->Nodo'+str(n)+';\n'
+                n+=1
+    
+            elif i.tipo == tipos.PARENTESIS_D and boolConteo:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion3->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolConteo:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion3->Nodo'+str(n)+';\n'
+                n+=1
+                boolConteo = False
+            
+            #Instruciones -> Promedio
+
+            #Instrucciones -> imprimirln
+            elif i.getLexema().lower() == 'promedio':
+                arbol+='NodoInstruccion4[label="tk_promedio"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion4;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion4->'+'Nodo'+str(n)+';\n'
+                boolPromedio = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolPromedio:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion4->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolPromedio:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion4->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PARENTESIS_D and boolPromedio:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion4->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolPromedio:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion4->Nodo'+str(n)+';\n'
+                n+=1
+                boolPromedio = False
+
+            #Instrucciones -> contarsi
+            elif i.getLexema().lower() == 'contarsi':
+                arbol+='NodoInstruccion5[label="tk_contarsi"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion5;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion5->'+'Nodo'+str(n)+';\n'
+                boolContarsi = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolContarsi:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion5->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolContarsi:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion5->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.COMA and boolContarsi:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion5->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.NUMERO and boolContarsi:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_numero"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion5->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1    
+            elif i.tipo == tipos.PARENTESIS_D and boolContarsi:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion5->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolContarsi:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion5->Nodo'+str(n)+';\n'
+                n+=1
+                boolContarsi = False
+            
+            #Instrucciones -> datos
+            elif i.getLexema().lower() == 'datos':
+                arbol+='NodoInstruccion6[label="tk_datos"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion6;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion6->'+'Nodo'+str(n)+';\n'
+                boolDatos = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolDatos:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion6->Nodo'+str(n)+';\n'
+                n+=1
+    
+            elif i.tipo == tipos.PARENTESIS_D and boolDatos:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion6->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolDatos:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion6->Nodo'+str(n)+';\n'
+                n+=1
+                boolDatos= False
+
+            #Instrucciones -> Sumar
+            elif i.getLexema().lower() == 'sumar':
+                arbol+='NodoInstruccion7[label="tk_sumar"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion7;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion7->'+'Nodo'+str(n)+';\n'
+                boolSumar = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolSumar:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion7->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolSumar:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion7->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PARENTESIS_D and boolSumar:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion7->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolSumar:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion7->Nodo'+str(n)+';\n'
+                n+=1
+                boolSumar = False
+
+            #Instrucciones -> Max
+            elif i.getLexema().lower() == 'max':
+                arbol+='NodoInstruccion8[label="tk_max"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion8;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion8->'+'Nodo'+str(n)+';\n'
+                boolMax = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolMax:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion8->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolMax:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion8->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PARENTESIS_D and boolMax:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion8->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolMax:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion8->Nodo'+str(n)+';\n'
+                n+=1
+                boolMax = False
+            
+            #Instrucciones -> Min
+            elif i.getLexema().lower() == 'min':
+                arbol+='NodoInstruccion9[label="tk_min"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion9;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion9->'+'Nodo'+str(n)+';\n'
+                boolMin = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolMin:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion9->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolMin:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion9->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PARENTESIS_D and boolMin:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion9->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolMin:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion9->Nodo'+str(n)+';\n'
+                n+=1
+                boolMin = False
+            
+            #Instrucciones -> ExportarReporte
+            elif i.getLexema().lower() == 'exportarreporte':
+                arbol+='NodoInstruccion10[label="tk_exportarReporte"];\n'
+                arbol+='NodoInstruccion->NodoInstruccion10;\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol+='NodoInstruccion10->'+'Nodo'+str(n)+';\n'
+                boolReporte = True
+                n += 1
+            
+            elif i.tipo == tipos.PARENTESIS_I and boolReporte:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion10->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.CADENA and boolReporte:
+                arbol+='NodoExpresion'+str(n+1)+'[label="tk_cadena"];\n'
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion10->NodoExpresion'+str(n+1)+'->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PARENTESIS_D and boolReporte:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion10->Nodo'+str(n)+';\n'
+                n+=1
+            elif i.tipo == tipos.PUNTO_COMA and boolReporte:
+                arbol +='Nodo'+str(n)+'[label="'+i.getLexema()+'"];\n'
+                arbol += 'NodoInstruccion10->Nodo'+str(n)+';\n'
+                n+=1
+                boolReporte = False
+
+        arbol += '\n }'
+
+        miArchivo = open('graphviz.dot', 'w')
+        miArchivo.write(arbol)
+        miArchivo.close()
+    
+        system('dot -Tpng graphviz.dot -o arbol_de_derivacion.png')
+
+
+        startfile('arbol_de_derivacion.png')
+        

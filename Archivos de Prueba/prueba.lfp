@@ -16,7 +16,9 @@ Registros = [
     56Hola mundo
 '''
 imprimir("Reporte de ");
+
 imprimirln("Abarroteria ");
+imprimirln("/**********hola***********\");
 conteo();
 promedio("stock");
 '''

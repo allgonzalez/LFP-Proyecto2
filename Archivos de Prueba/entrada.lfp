@@ -1,6 +1,6 @@
 Claves = [
     "codigo","producto","precio_compra","precio_venta","stock"
-]@
+]
 
 Registros = [
 	{1, "Barbacoa", 10.50, 20.00, 6}
@@ -50,50 +50,49 @@ datos();
 
 imprimir("/***** ***** ***** ");
 imprimir("Claves");
-imprimir(" ***** ***** *****\");
+imprimir(" ***** ***** *****");
 imprimirln(" ");
 imprimirln(" ");
 
 imprimir("/***** ***** ***** ");
 imprimir("Registros");
-imprimir(" ***** ***** *****\");
+imprimir(" ***** ***** *****");
 imprimirln(" ");
 imprimirln(" ");
 
 
 
 # Conteo
-imprimirln("/***** ***** ***** Conteo ***** ***** *****\");
+imprimirln("/***** ***** ***** Conteo ***** ***** *****");
 conteo();
 
 # Promedio
-imprimirln("/***** ***** ***** Promedio ***** ***** *****\");
+imprimirln("/***** ***** ***** Promedio ***** ***** *****");
 promedio("stock");
 
 # Contar si
-imprimirln("/***** ***** ***** Contar si ***** ***** *****\");
+imprimirln("/***** ***** ***** Contar si ***** ***** *****");
 contarsi("stock", 0);
 contarsi("stock", 1);
-contarsi("stock", 4);
 
 # Datos
-imprimirln("/***** ***** ***** Datos ***** ***** *****\");
+imprimirln("/***** ***** ***** Datos ***** ***** *****");
 datos();
 
 # Sumar
-imprimirln("/***** ***** ***** Sumar ***** ***** *****\");
+imprimirln("/***** ***** ***** Sumar ***** ***** *****");
 sumar("stock");
 
 # Max
-imprimirln("/***** ***** ***** Maximo ***** ***** *****\");
+imprimirln("/***** ***** ***** Maximo ***** ***** *****");
 max("precio_venta");
 
 # Min
-imprimirln("/***** ***** ***** Minimo ***** ***** *****\");
+imprimirln("/***** ***** ***** Minimo ***** ***** *****");
 min("precio_compra");
 
 # Exportar reporte
-imprimirln("/***** ***** ***** Exportando Reporte ***** ***** *****\");
+imprimirln("/***** ***** ***** Exportando Reporte ***** ***** *****");
 exportarReporte("Reporte HTML de abarroteria");
 
 '''

@@ -1,0 +1,40 @@
+Gramatica
+
+<INICIO> ::= <Clave>
+          | <Registros>
+          | <Instrucciones>
+
+
+<Clave> ::= <tk_Clave> <tk_igual> <tk_corcheteI>  <BloqueClave> <tk_corcheteD> 
+
+<BloqueClave> ::= <CuerpoClave> <BloqueClave>
+                | <CuerpoClave>
+
+<CuerpoClave> ::= <tk_llaveI> <tk_cadena><MasClaves> <tk_llaveD>
+
+<MasClaves> ::= <tk_coma> <tk_cadena> <MasClaves>
+          | <tk_cadena>
+
+<Registros> ::= <tk_Registro> <tk_igual> <tk_corcheteI> <BloqueRegistro> <tk_corcheteD>
+
+<BloqueRegistro> ::= <CuerpoRegistro> <BloqueRegistro>
+                    | <CuerpoRegistro>
+
+<CuerpoRegistro> ::= <tk_llaveI> <tk_cadena> <MasRegistros> <tk_llaveD>
+                    | <tk_llaveI> <tk_numero> <MasRegistros> <tk_llaveD>
+
+<MasRegistros> ::= <tk_coma> <tk_cadena> <MasRegistros>
+                 | <tk_coma> <tk_numero> <MasRegistros>
+                 | <tk_cadena>
+                 | <tk_numero>
+
+<Instrucciones> :== <tk_imprimir> <tk_parentesisI> <tk_cadena> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_imprimirln> <tk_parentesisI> <tk_cadena> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_conteo> <tk_parentesisI> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_promedio> <tk_parentesisI> <tk_cadena> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_contarsi> <tk_parentesisI> <tk_cadena> <tk_coma> <tk_numero> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_datos> <tk_parentesisI> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_sumar> <tk_parentesisI> <tk_cadena> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_max> <tk_parentesisI> <tk_cadena> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_min> <tk_parentesisI> <tk_cadena> <tk_parentesisD> <tk_puntoycoma>
+                  | <tk_exportarReporte> <tk_parentesisI> <tk_cadena> <tk_parentesisD> <tk_puntoycoma>
