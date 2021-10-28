@@ -6,6 +6,7 @@ from tkinter.font import families
 from Analizador import Analizador
 
 analizador = Analizador()
+
 #Funciones
 
 

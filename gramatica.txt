@@ -1,4 +1,4 @@
-Gramatica
+Gramatica para el Proyecto 2 LFP
 
 <INICIO> ::= <Clave>
           | <Registros>
