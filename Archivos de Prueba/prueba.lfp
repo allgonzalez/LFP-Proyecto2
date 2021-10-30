@@ -1,6 +1,11 @@
+imprimirln("Imprimirndo claves");
+
 Claves = [  
     "codigo","producto","precio_compra","precio_venta","stock"
 ]
+
+#holaaaa
+imprimir("holaa");
 
 Registros = [
     {1,"Barbacoa",10.50,20.00,6}
@@ -9,7 +14,8 @@ Registros = [
     {4,"Mostaza",14.00,16.00,4}
 ]
 
-#Comentario de una linea
+
+
 '''
     Multilinea
     Hola mundo

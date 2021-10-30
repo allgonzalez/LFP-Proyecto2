@@ -435,17 +435,21 @@ class Analizador:
                      Boolclave = True
 
                 elif self.tokens[cont].tipo == tipos.CADENA and Boolclave:
-
+                   
                     if self.tokens[cont-2].tipo == tipos.COMA:  
                         self.claves.append(self.tokens[cont].getLexema())
-                
+                    
                     elif self.tokens[cont-2].tipo == tipos.CORCHETE_I:
                         self.claves.append(self.tokens[cont].getLexema())
-                
+                    
+                    elif self.tokens[cont-3].tipo == tipos.PALABRA_RESERVADA:
+                        cont = contadorTemp - 1
+
                     else :
                         self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_COMA, self.tokens[cont-2].getFila(), self.tokens[cont-2].getColumna()))
                         self.generarErrores= True
-            
+                    
+
                 elif self.tokens[cont].getLexema().lower() == 'registros':
                     if self.tokens[cont-1].tipo != tipos.CORCHETE_D:
                         self.erroresSintacticos.append(ErrorSintactico(tiposError.FALTO_CORCHETE_D, self.tokens[cont-1].getFila(), self.tokens[cont-1].getColumna()))
@@ -710,7 +714,7 @@ class Analizador:
         promedio = 0
         for i in self.registros:
             if i.getClave() == clave:
-                suma += int(i.getRegistro())
+                suma += float(i.getRegistro())
                 total += 1
         
         promedio = suma / total
@@ -721,7 +725,7 @@ class Analizador:
         suma = 0
         for i in self.registros:
             if i.getClave() == clave:
-                suma += int(i.getRegistro())
+                suma += float(i.getRegistro())
         
         return str(suma)
         
