@@ -18,7 +18,9 @@ class Token():
     CADENA = 15
     COMILLAS_DOBLE = 16
     FIN_DOCUMENTO = 17
-    DESCONOCIDO = 18   
+    DESCONOCIDO = 18
+    DOS_PUNTOS = 19   
+    PUNTO = 20
 
     #Método constructor
 
@@ -73,4 +75,7 @@ class Token():
             return 'COMILLAS DOBLE'
         elif self.tipo == self.FIN_DOCUMENTO:
             return 'FIN DEL DOCUMENTO'
-
+        elif self.tipo == self.DOS_PUNTOS:
+            return 'DOS PUNTOS'
+        elif self.tipo == self.PUNTO:
+            return 'PUNTO'

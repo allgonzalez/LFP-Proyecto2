@@ -290,6 +290,16 @@ class Analizador:
                     self.estado = 4
                     self.columna += 1
                     self.lexema += actual
+                
+                elif actual == '.':
+                    self.estado = 4
+                    self.columna += 1
+                    self.lexema += actual
+                
+                elif actual == ':':
+                    self.estado = 4
+                    self.columna += 1
+                    self.lexema += actual
 
                 elif actual == '"':
                     temporal = actual
@@ -297,7 +307,8 @@ class Analizador:
                     self.lexema = temporal
                     self.columna += 1
                     self.agregarToken(tipos.COMILLAS_DOBLE)
-                      
+
+                                     
 
             #Estado para los comentarios de una linea
             elif self.estado ==5:
